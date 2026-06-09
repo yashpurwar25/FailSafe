@@ -1,0 +1,63 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg-deep: #030712;
+  --accent-red: #ef4444;
+  --glass-border: rgba(255, 255, 255, 0.1);
+}
+
+body {
+  background-color: var(--bg-deep);
+  color: #f9fafb;
+  overflow-x: hidden;
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+/* Moving Mesh Background Animation */
+.mesh-gradient {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  background: var(--bg-deep);
+  overflow: hidden;
+}
+
+.blob {
+  position: absolute;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(239, 68, 68, 0.15) 0%, rgba(0, 0, 0, 0) 70%);
+  filter: blur(80px);
+  border-radius: 50%;
+  animation: move 25s infinite alternate;
+}
+
+.blob-2 {
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.1) 0%, rgba(0, 0, 0, 0) 70%);
+  animation-delay: -5s;
+  animation-duration: 30s;
+}
+
+.blob-3 {
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.1) 0%, rgba(0, 0, 0, 0) 70%);
+  animation-delay: -10s;
+  animation-duration: 35s;
+}
+
+@keyframes move {
+  from { transform: translate(-10%, -10%) rotate(0deg); }
+  to { transform: translate(110%, 110%) rotate(360deg); }
+}
+
+/* Glassmorphism Utility */
+.glass {
+  background: rgba(17, 24, 39, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+}

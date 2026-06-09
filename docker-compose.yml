@@ -1,0 +1,45 @@
+version: '3.9'
+
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: failsafe_user
+      POSTGRES_PASSWORD: failsafe_pass
+      POSTGRES_DB: failsafe_db
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U failsafe_user -d failsafe_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: ./backend
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://failsafe_user:failsafe_pass@db:5432/failsafe_db
+      SECRET_KEY: your-super-secret-key-change-this-to-something-random-64chars
+      ML_MODEL_PATH: /app/models/xgboost_model.pkl
+      ML_EXPLAINER_PATH: /app/models/shap_explainer.pkl
+      ML_ENCODERS_PATH: /app/models/encoders.pkl
+      ML_FEATURE_COLS_PATH: /app/models/feature_cols.pkl
+    volumes:
+      - ./ml/models:/app/models:ro
+    ports:
+      - "8000:8000"
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:
