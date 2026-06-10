@@ -16,9 +16,10 @@ def verify_password(plain: str, hashed: str) -> bool:
         return pwd_context.verify(plain, hashed)
     except Exception:
         return False
-
 def get_password_hash(password: str) -> str:
-    return pwd_context.hash(password)
+    # Explicitly encode the password to utf-8 bytes to prevent 
+    # the '72 bytes' error on Linux servers
+    return pwd_context.hash(password.encode('utf-8'))
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode = data.copy()
