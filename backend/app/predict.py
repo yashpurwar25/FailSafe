@@ -1,41 +1,4 @@
-import joblib
-import pandas as pd
-import numpy as np
-import os
-import sys
-from .database import settings
-
-
-class PredictionService:
-    _instance = None
-
-    def __new__(cls):
-        if cls._instance is None:
-            cls._instance = super().__new__(cls)
-            cls._instance._loaded = False
-            cls._instance.model = None
-            cls._instance.explainer = None
-            cls._instance.encoders = None
-            cls._instance.feature_cols = None
-        return cls._instance
-
-    def load(self):
-        if self._loaded:
-            return
-        try:
-            print("Loading ML artifacts...")
-            self.model = joblib.load(settings.ML_MODEL_PATH)
-            self.explainer = joblib.load(settings.ML_EXPLAINER_PATH)
-            self.encoders = joblib.load(settings.ML_ENCODERS_PATH)
-            self.feature_cols = joblib.load(settings.ML_FEATURE_COLS_PATH)
-            self._loaded = True
-            print("ML artifacts loaded successfully.")
-        except Exception as e:
-            print(f"WARNING: ML models not found - {e}")
-            print("Backend running without ML. Train models first.")
-            self._loaded = False
-
-    def predict(self, student_data: dict, student_name: str = "Student") -> dict:
+def predict(self, student_data: dict, student_name: str = "Student") -> dict:
         if not self._loaded:
             return {
                 'risk_probability': 0.0,
@@ -50,16 +13,17 @@ class PredictionService:
                 }
             }
 
-              # Add this inside the predict() method in PredictionService class
-# Convert integer family size back to categorical for the ML model
-if 'famsize' in df.columns:
-    try:
-        # If it's a number, convert to GT3/LE3
-        df['famsize'] = df['famsize'].apply(lambda x: 'GT3' if int(x) > 3 else 'LE3')
-    except:
-        pass # Keep as is if it's already categorical
         try:
             df = pd.DataFrame([student_data])
+
+            # --- NEW FIX: Convert integer family size to categorical ---
+            if 'famsize' in df.columns:
+                try:
+                    # Convert to numeric first in case it's a string
+                    numeric_famsize = pd.to_numeric(df['famsize'], errors='coerce')
+                    df['famsize'] = numeric_famsize.apply(lambda x: 'GT3' if x > 3 else 'LE3')
+                except Exception as e:
+                    print(f"Famsize conversion error: {e}")
 
             # Feature engineering
             df['grade_momentum'] = df['G2'] - df['G1']
@@ -134,7 +98,7 @@ if 'famsize' in df.columns:
                 'all_contributions': contributions
             }
 
-            # Risk level
+            # Risk level logic
             if risk_prob >= 0.75:
                 risk_level = 'CRITICAL'
                 summary = f"{student_name} is in critical risk. Immediate intervention required."
@@ -196,6 +160,3 @@ if 'famsize' in df.columns:
                     'risk_probability': 0.0
                 }
             }
-
-
-prediction_service = PredictionService()
