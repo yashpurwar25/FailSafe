@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { login } from '../api/auth'
 import { ShieldAlert, Loader2, Lock, Mail } from 'lucide-react'
 import { motion } from 'framer-motion'
