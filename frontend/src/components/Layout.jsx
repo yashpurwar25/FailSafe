@@ -1,38 +1,27 @@
-import { Outlet, NavLink, useNavigate } from 'react-router-dom'
-import { LayoutDashboard, Users, LogOut, ShieldAlert } from 'lucide-react'
-import { motion } from 'framer-motion'
-
-const BackgroundGradient = () => (
-  <div className="mesh-gradient">
-    <div className="blob"></div>
-    <div className="blob blob-2"></div>
-    <div className="blob blob-3"></div>
-  </div>
-)
+import React from 'react';
+import { Outlet, NavLink, useNavigate } from 'react-router-dom';
+import { LayoutDashboard, Users, LogOut } from 'lucide-react';
+import { motion } from 'framer-motion';
+import Logo from './Logo'; // IMPORTANT IMPORT
 
 export default function Layout() {
-  const navigate = useNavigate()
-  const logout = () => { localStorage.removeItem('token'); navigate('/login') }
+  const navigate = useNavigate();
+  const logout = () => { localStorage.removeItem('token'); navigate('/login') };
 
   return (
-    <div className="flex h-screen text-white relative overflow-hidden">
-      <BackgroundGradient />
-      
-      {/* Floating Glass Sidebar */}
+    <div className="flex h-screen bg-[#020617] text-white relative overflow-hidden">
+      {/* Sidebar */}
       <motion.aside 
         initial={{ x: -100, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
-        className="w-64 m-4 rounded-2xl glass flex flex-col z-10"
+        className="w-64 m-4 rounded-3xl glass-card flex flex-col z-10 border border-white/10"
       >
-       import Logo from './Logo'; // Add this import at the top of Layout.jsx
-
-// ... inside the return function:
-<div className="p-6 border-b border-white/10">
-  <Logo size="lg" />
-  <p className="text-[10px] text-gray-400 mt-2 uppercase tracking-widest font-medium">
-    Risk Intelligence Console
-  </p>
-</div>
+        <div className="p-6 border-b border-white/10">
+          <Logo size="lg" />
+          <p className="text-[10px] text-gray-400 mt-2 uppercase tracking-widest font-medium">
+            Risk Intelligence Console
+          </p>
+        </div>
 
         <nav className="flex-1 p-4 space-y-2">
           {[
@@ -42,7 +31,7 @@ export default function Layout() {
             <NavLink key={to} to={to} end
               className={({ isActive }) =>
                 `flex items-center gap-3 px-4 py-3 rounded-xl text-sm transition-all duration-200
-                 ${isActive ? 'bg-red-500 text-white shadow-lg shadow-red-500/30' 
+                 ${isActive ? 'bg-red-600 text-white shadow-lg shadow-red-600/30' 
                             : 'text-gray-400 hover:text-white hover:bg-white/5'}`}>
               <Icon size={18} />
               {label}
@@ -58,16 +47,9 @@ export default function Layout() {
         </div>
       </motion.aside>
 
-      {/* Main Content Area */}
       <main className="flex-1 overflow-auto p-4 z-10">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-        >
-          <Outlet />
-        </motion.div>
+        <Outlet />
       </main>
     </div>
-  )
+  );
 }
