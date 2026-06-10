@@ -67,22 +67,6 @@
 
    git clone https://github.com/your-username/failsafe.git
    cd failsafe
-# 🎓 Student Risk Prediction & Explainability System
-
-An AI-powered student risk prediction platform that identifies students who may be at academic risk and provides interpretable explanations for predictions using machine learning and explainable AI techniques.
-
----
-
-## 🚀 Features
-
-* 📊 Student risk prediction using Machine Learning
-* 🔍 Explainable AI for transparent decision-making
-* ⚡ FastAPI backend for scalable APIs
-* 🎨 Modern frontend interface
-* 🗄️ Database integration for student records
-* 📈 Performance monitoring and evaluation metrics
-
----
 
 ## 🏗️ Project Structure
 
