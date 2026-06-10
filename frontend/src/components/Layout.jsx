@@ -24,15 +24,15 @@ export default function Layout() {
         animate={{ x: 0, opacity: 1 }}
         className="w-64 m-4 rounded-2xl glass flex flex-col z-10"
       >
-        <div className="p-6 border-b border-white/10">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-red-500 rounded-lg shadow-lg shadow-red-500/40">
-              <ShieldAlert className="text-white" size={20} />
-            </div>
-            <span className="text-xl font-bold tracking-tighter text-white">FAILSAFE</span>
-          </div>
-          <p className="text-[10px] text-gray-400 mt-2 uppercase tracking-widest font-medium">AI Early Warning System</p>
-        </div>
+       import Logo from './Logo'; // Add this import at the top of Layout.jsx
+
+// ... inside the return function:
+<div className="p-6 border-b border-white/10">
+  <Logo size="lg" />
+  <p className="text-[10px] text-gray-400 mt-2 uppercase tracking-widest font-medium">
+    Risk Intelligence Console
+  </p>
+</div>
 
         <nav className="flex-1 p-4 space-y-2">
           {[
