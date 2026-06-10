@@ -1,4 +1,43 @@
-def predict(self, student_data: dict, student_name: str = "Student") -> dict:
+import joblib
+import pandas as pd
+import numpy as np
+import os
+import sys
+
+# Add ml/src to path for imports if needed
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../../ml/src'))
+
+from .database import settings
+
+class PredictionService:
+    _instance = None
+
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+            cls._instance._loaded = False
+            cls._instance.model = None
+            cls._instance.explainer = None
+            cls._instance.encoders = None
+            cls._instance.feature_cols = None
+        return cls._instance
+
+    def load(self):
+        if self._loaded:
+            return
+        try:
+            print("Loading ML artifacts...")
+            self.model = joblib.load(settings.ML_MODEL_PATH)
+            self.explainer = joblib.load(settings.ML_EXPLAINER_PATH)
+            self.encoders = joblib.load(settings.ML_ENCODERS_PATH)
+            self.feature_cols = joblib.load(settings.ML_FEATURE_COLS_PATH)
+            self._loaded = True
+            print("ML artifacts loaded successfully.")
+        except Exception as e:
+            print(f"WARNING: ML models not found - {e}")
+            self._loaded = False
+
+    def predict(self, student_data: dict, student_name: str = "Student") -> dict:
         if not self._loaded:
             return {
                 'risk_probability': 0.0,
@@ -16,14 +55,13 @@ def predict(self, student_data: dict, student_name: str = "Student") -> dict:
         try:
             df = pd.DataFrame([student_data])
 
-            # --- NEW FIX: Convert integer family size to categorical ---
+            # Fix for integer family size
             if 'famsize' in df.columns:
                 try:
-                    # Convert to numeric first in case it's a string
                     numeric_famsize = pd.to_numeric(df['famsize'], errors='coerce')
                     df['famsize'] = numeric_famsize.apply(lambda x: 'GT3' if x > 3 else 'LE3')
-                except Exception as e:
-                    print(f"Famsize conversion error: {e}")
+                except:
+                    pass
 
             # Feature engineering
             df['grade_momentum'] = df['G2'] - df['G1']
@@ -74,7 +112,6 @@ def predict(self, student_data: dict, student_name: str = "Student") -> dict:
                     df[col] = 0
 
             X = df[self.feature_cols]
-
             risk_prob = float(self.model.predict_proba(X)[0][1])
             is_at_risk = risk_prob >= 0.5
 
@@ -145,7 +182,6 @@ def predict(self, student_data: dict, student_name: str = "Student") -> dict:
                     'student_name': student_name
                 }
             }
-
         except Exception as e:
             print(f"Prediction error: {e}")
             return {
@@ -160,3 +196,6 @@ def predict(self, student_data: dict, student_name: str = "Student") -> dict:
                     'risk_probability': 0.0
                 }
             }
+
+# THIS LINE IS THE KEY - IT MUST BE OUTSIDE THE CLASS
+prediction_service = PredictionService()
