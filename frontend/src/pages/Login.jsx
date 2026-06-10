@@ -110,6 +110,11 @@ export default function Login() {
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-shimmer" />
             </button>
           </div>
+          <div className="text-center mt-6">
+  <p className="text-slate-500 text-sm">
+    Don't have an account? <Link to="/register" className="text-red-500 hover:underline font-bold">Register here</Link>
+  </p>
+</div>
         </motion.form>
         
         <p className="text-center text-slate-500 text-[11px] mt-8 uppercase tracking-[0.2em] font-bold">

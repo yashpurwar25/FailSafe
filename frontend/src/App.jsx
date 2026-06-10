@@ -15,14 +15,15 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/" element={<PrivateRoute><Layout /></PrivateRoute>}>
-          <Route index element={<Dashboard />} />
-          <Route path="students" element={<Students />} />
-          <Route path="students/add" element={<AddStudent />} />
-          <Route path="students/:id" element={<StudentDetail />} />
-        </Route>
-      </Routes>
+  <Route path="/login" element={<Login />} />
+  <Route path="/register" element={<Register />} /> {/* ADD THIS LINE */}
+  <Route path="/" element={<PrivateRoute><Layout /></PrivateRoute>}>
+    <Route index element={<Dashboard />} />
+    <Route path="students" element={<Students />} />
+    <Route path="students/add" element={<AddStudent />} />
+    <Route path="students/:id" element={<StudentDetail />} />
+  </Route>
+</Routes>
     </BrowserRouter>
   )
 }
