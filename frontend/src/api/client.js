@@ -26,3 +26,4 @@ api.interceptors.response.use(
 )
 
 export default api
+export const deleteStudent = id => api.delete(`/students/${id}`)

@@ -78,3 +78,15 @@ def prediction_history(student_id: int, db: Session = Depends(get_db),
     return db.query(models.Prediction).filter(
         models.Prediction.student_id == student_id
     ).order_by(models.Prediction.created_at.desc()).all()
+@router.delete("/{student_id}")
+def delete_student(student_id: int, db: Session = Depends(get_db), current=Depends(get_current_faculty)):
+    student = db.query(models.Student).filter(models.Student.id == student_id).first()
+    if not student:
+        raise HTTPException(404, "Student not found")
+    
+    # Also delete all predictions associated with this student
+    db.query(models.Prediction).filter(models.Prediction.student_id == student_id).delete()
+    
+    db.delete(student)
+    db.commit()
+    return {"message": f"Student {student_id} deleted successfully"}
