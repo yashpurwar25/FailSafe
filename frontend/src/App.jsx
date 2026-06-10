@@ -5,7 +5,7 @@ import Students from './pages/Students'
 import StudentDetail from './pages/StudentDetail'
 import AddStudent from './pages/AddStudent'
 import Layout from './components/Layout'
-
+import Register from './pages/Register'
 const PrivateRoute = ({ children }) => {
   const token = localStorage.getItem('token')
   return token ? children : <Navigate to="/login" replace />
