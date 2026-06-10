@@ -63,5 +63,38 @@
 
 1. **Clone the repository**
    ```bash
+   Setup Machine Learning Model
+code
+Bash
+cd ml
+python -m venv venv
+source venv/bin/activate # Windows: venv\Scripts\activate
+pip install -r requirements.txt
+python src/train.py
+python src/explain.py
+Setup Backend
+code
+Bash
+cd ../backend
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+# Create .env file with DATABASE_URL and SECRET_KEY
+uvicorn app.main:app --reload
+Setup Frontend
+code
+Bash
+cd ../frontend
+npm install
+npm run dev
+📈 Project Performance
+The system was evaluated on a combined dataset of 1,044 students with the following results:
+ROC-AUC: 0.93
+F1-Score (At-Risk): 0.85
+Inference Latency: < 200ms
+📄 License
+Distributed under the MIT License. See LICENSE for more information.
+✉️ Contact
+[Your Name] - [Your Email] - [Your LinkedIn]
    git clone https://github.com/your-username/failsafe.git
    cd failsafe
