@@ -1,21 +1,33 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { createStudent } from '../api/students'
-import { ArrowLeft, Save } from 'lucide-react'
+import { ArrowLeft, Save, Info } from 'lucide-react'
 
-const Field = ({ label, name, type = 'text', value, onChange, options }) => (
-  <div>
-    <label className="block text-xs text-gray-400 mb-1 uppercase tracking-wider">{label}</label>
+// Helper component for labels with tooltips
+const LabelWithInfo = ({ label, info }) => (
+  <div className="flex items-center gap-2 mb-1">
+    <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider">{label}</label>
+    <div className="group relative">
+      <Info size={12} className="text-slate-500 cursor-help" />
+      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-slate-800 text-white text-[10px] rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 border border-white/10 shadow-xl">
+        {info}
+      </div>
+    </div>
+  </div>
+)
+
+const Field = ({ label, name, type = 'text', value, onChange, options, info }) => (
+  <div className="flex flex-col">
+    {info && <LabelWithInfo label={label} info={info} />}
+    {!info && <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">{label}</label>}
     {options ? (
       <select name={name} value={value} onChange={onChange}
-        className="w-full bg-[#0a0e1a] border border-[#1f2937] rounded-lg px-3 py-2.5
-                   text-white text-sm focus:border-red-500 focus:outline-none">
+        className="w-full bg-slate-900/50 border border-white/10 rounded-2xl px-3 py-3 text-white text-sm focus:border-red-500 outline-none transition-all">
         {options.map(o => <option key={o} value={o}>{o}</option>)}
       </select>
     ) : (
       <input type={type} name={name} value={value} onChange={onChange}
-        className="w-full bg-[#0a0e1a] border border-[#1f2937] rounded-lg px-3 py-2.5
-                   text-white text-sm focus:border-red-500 focus:outline-none" />
+        className="w-full bg-slate-900/50 border border-white/10 rounded-2xl px-4 py-3 text-white text-sm focus:border-red-500 outline-none transition-all" />
     )}
   </div>
 )
@@ -28,7 +40,7 @@ export default function AddStudent() {
   const [form, setForm] = useState({
     name: '', student_id: '', subject: 'math',
     school: 'GP', sex: 'M', age: 17,
-    address: 'U', famsize: 'GT3', Pstatus: 'T',
+    address: 'U', famsize: 3, Pstatus: 'T', // famsize is now a number
     Medu: 2, Fedu: 2, Mjob: 'other', Fjob: 'other',
     reason: 'course', guardian: 'mother',
     traveltime: 1, studytime: 2, failures: 0,
@@ -56,77 +68,44 @@ export default function AddStudent() {
   }
 
   return (
-    <div className="p-8 max-w-4xl mx-auto">
-      <Link to="/students" className="flex items-center gap-2 text-gray-400 hover:text-white text-sm mb-6 transition-colors">
-        <ArrowLeft size={16} /> Back
+    <div className="p-8 max-w-5xl mx-auto">
+      <Link to="/students" className="flex items-center gap-2 text-slate-400 hover:text-white text-sm mb-8 transition-all group">
+        <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> Back to Registry
       </Link>
-      <h1 className="text-2xl font-bold text-white mb-6">Add New Student</h1>
+      <h1 className="text-4xl font-black text-white mb-10 tracking-tight">Add <span className="text-red-500">Student</span></h1>
 
-      <form onSubmit={onSubmit} className="space-y-6">
-        {/* Identity */}
-        <section className="bg-[#111827] border border-[#1f2937] rounded-xl p-6">
-          <h2 className="text-white font-semibold text-sm uppercase tracking-wider mb-4">Identity</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <form onSubmit={onSubmit} className="space-y-8">
+        <section className="glass-card p-8 rounded-[2.5rem] border-t-4 border-t-red-600">
+          <h2 className="text-white font-bold text-sm uppercase tracking-widest mb-6">Identity & Demographics</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <Field label="Full Name" name="name" value={form.name} onChange={onChange} />
             <Field label="Student ID" name="student_id" value={form.student_id} onChange={onChange} />
             <Field label="Subject" name="subject" value={form.subject} onChange={onChange} options={['math', 'portuguese']} />
-          </div>
-        </section>
-
-        {/* Demographics */}
-        <section className="bg-[#111827] border border-[#1f2937] rounded-xl p-6">
-          <h2 className="text-white font-semibold text-sm uppercase tracking-wider mb-4">Demographics</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <Field label="School" name="school" value={form.school} onChange={onChange} options={['GP','MS']} />
+            <Field label="School" name="school" value={form.school} onChange={onChange} /> {/* Now a text input */}
             <Field label="Sex" name="sex" value={form.sex} onChange={onChange} options={['M','F']} />
             <Field label="Age" name="age" type="number" value={form.age} onChange={onChange} />
+            <Field label="Family Size" name="famsize" type="number" value={form.famsize} onChange={onChange} info="Enter total number of people living in the household." />
             <Field label="Address" name="address" value={form.address} onChange={onChange} options={['U','R']} />
-            <Field label="Family Size" name="famsize" value={form.famsize} onChange={onChange} options={['GT3','LE3']} />
-            <Field label="Parents Status" name="Pstatus" value={form.Pstatus} onChange={onChange} options={['T','A']} />
             <Field label="Guardian" name="guardian" value={form.guardian} onChange={onChange} options={['mother','father','other']} />
           </div>
         </section>
 
-        {/* Academic */}
-        <section className="bg-[#111827] border border-[#1f2937] rounded-xl p-6">
-          <h2 className="text-white font-semibold text-sm uppercase tracking-wider mb-4">Academic</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <Field label="G1 (Period 1)" name="G1" type="number" value={form.G1} onChange={onChange} />
-            <Field label="G2 (Period 2)" name="G2" type="number" value={form.G2} onChange={onChange} />
+        <section className="glass-card p-8 rounded-[2.5rem] border-t-4 border-t-blue-600">
+          <h2 className="text-white font-bold text-sm uppercase tracking-widest mb-6">Academic Performance</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <Field label="G1 Score" name="G1" type="number" value={form.G1} onChange={onChange} info="Grade from the 1st period (0-20)" />
+            <Field label="G2 Score" name="G2" type="number" value={form.G2} onChange={onChange} info="Grade from the 2nd period (0-20)" />
             <Field label="Absences" name="absences" type="number" value={form.absences} onChange={onChange} />
-            <Field label="Failures" name="failures" type="number" value={form.failures} onChange={onChange} />
-            <Field label="Study Time" name="studytime" type="number" value={form.studytime} onChange={onChange} />
+            <Field label="Previous Failures" name="failures" type="number" value={form.failures} onChange={onChange} />
+            <Field label="Study Time" name="studytime" type="number" value={form.studytime} onChange={onChange} info="Weekly study time (1: <2h, 2: 2-5h, 3: 5-10h, 4: >10h)" />
             <Field label="Travel Time" name="traveltime" type="number" value={form.traveltime} onChange={onChange} />
-            <Field label="Reason for School" name="reason" value={form.reason} onChange={onChange} options={['course','home','reputation','other']} />
-          </div>
-        </section>
-
-        {/* Support & Social */}
-        <section className="bg-[#111827] border border-[#1f2937] rounded-xl p-6">
-          <h2 className="text-white font-semibold text-sm uppercase tracking-wider mb-4">Support & Social</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <Field label="School Support" name="schoolsup" value={form.schoolsup} onChange={onChange} options={YN} />
-            <Field label="Family Support" name="famsup" value={form.famsup} onChange={onChange} options={YN} />
-            <Field label="Paid Classes" name="paid" value={form.paid} onChange={onChange} options={YN} />
-            <Field label="Activities" name="activities" value={form.activities} onChange={onChange} options={YN} />
-            <Field label="Higher Edu?" name="higher" value={form.higher} onChange={onChange} options={YN} />
-            <Field label="Internet" name="internet" value={form.internet} onChange={onChange} options={YN} />
-            <Field label="Romantic" name="romantic" value={form.romantic} onChange={onChange} options={YN} />
-            <Field label="Daily Alcohol" name="Dalc" type="number" value={form.Dalc} onChange={onChange} />
-            <Field label="Weekend Alcohol" name="Walc" type="number" value={form.Walc} onChange={onChange} />
-            <Field label="Goout" name="goout" type="number" value={form.goout} onChange={onChange} />
-            <Field label="Health" name="health" type="number" value={form.health} onChange={onChange} />
-            <Field label="Family Rel." name="famrel" type="number" value={form.famrel} onChange={onChange} />
-            <Field label="Medu" name="Medu" type="number" value={form.Medu} onChange={onChange} />
-            <Field label="Fedu" name="Fedu" type="number" value={form.Fedu} onChange={onChange} />
           </div>
         </section>
 
         <button type="submit" disabled={loading}
-          className="flex items-center gap-2 bg-red-600 hover:bg-red-500 disabled:opacity-50
-                     text-white font-semibold px-8 py-3 rounded-lg transition-colors">
-          <Save size={16} />
-          {loading ? 'Saving...' : 'Save Student'}
+          className="w-full flex items-center justify-center gap-3 bg-red-600 hover:bg-red-500 disabled:opacity-50 text-white font-bold py-5 rounded-3xl transition-all shadow-lg shadow-red-600/30 active:scale-95">
+          <Save size={22} />
+          {loading ? 'Saving to Registry...' : 'Save Student Record'}
         </button>
       </form>
     </div>

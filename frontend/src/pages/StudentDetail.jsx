@@ -60,11 +60,23 @@ export default function StudentDetail() {
   if (!student) return <div className="p-8 text-red-400 text-center font-mono">Student record not found in database</div>
 
   // Data for the Grade Trajectory Chart
-  const gradeData = [
-    { name: 'Period 1', grade: student.G1 },
-    { name: 'Period 2', grade: student.G2 },
-    { name: 'Predicted', grade: prediction ? (20 - (prediction.risk_probability * 20)).toFixed(1) : null },
-  ].filter(d => d.grade !== null)
+  <div className="grid grid-cols-2 gap-3 text-left">
+  {[ 
+    ['Subject', student.subject], 
+    ['Age', student.age], 
+    ['G1 Grade', student.G1, '1st Period Score'], 
+    ['G2 Grade', student.G2, '2nd Period Score'], 
+    ['Absences', student.absences], 
+    ['Failures', student.failures] 
+  ].map(([k, v, info]) => (
+    <div key={k} className="p-3 rounded-2xl bg-white/5 border border-white/5 group relative">
+      <p className="text-[10px] uppercase text-slate-500 font-bold flex items-center gap-1">
+        {k} {info && <Info size={10} className="cursor-help" title={info} />}
+      </p>
+      <p className="text-white font-semibold">{v}</p>
+    </div>
+  ))}
+</div>
 
   return (
     <div className="p-8 max-w-7xl mx-auto">

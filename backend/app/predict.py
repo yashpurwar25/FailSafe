@@ -50,6 +50,14 @@ class PredictionService:
                 }
             }
 
+              # Add this inside the predict() method in PredictionService class
+# Convert integer family size back to categorical for the ML model
+if 'famsize' in df.columns:
+    try:
+        # If it's a number, convert to GT3/LE3
+        df['famsize'] = df['famsize'].apply(lambda x: 'GT3' if int(x) > 3 else 'LE3')
+    except:
+        pass # Keep as is if it's already categorical
         try:
             df = pd.DataFrame([student_data])
 
