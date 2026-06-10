@@ -16,7 +16,7 @@ const StatCard = ({ title, value, icon: Icon, color, delay }) => (
     </div>
     <div>
       <p className="text-gray-400 text-xs uppercase tracking-wider font-medium">{title}</p>
-      <p className="text-3xl font-bold text-white mt-1">{value ?? '—'}</p>
+      <p className="text-3xl font-bold text-white mt-1">{value ?? '0'}</p>
     </div>
   </motion.div>
 )
@@ -30,13 +30,17 @@ export default function Dashboard() {
     setLoading(true)
     try {
       const [s, t] = await Promise.all([getDashboardStats(), getRiskTrend()])
-      setStats(s.data); setTrend(t.data)
-    } catch (e) { console.error(e) }
+      setStats(s.data || {}) // Fallback to empty object
+      setTrend(t.data || []) // Fallback to empty array
+    } catch (e) { 
+      console.error("Dashboard load error:", e) 
+    }
     finally { setLoading(false) }
   }
 
   useEffect(() => { load() }, [])
-  const user = JSON.parse(localStorage.getItem('user') || '{}')
+
+  const user = JSON.parse(localStorage.getItem('user') || '{"name": "Faculty"}')
 
   return (
     <div className="max-w-7xl mx-auto">
@@ -46,7 +50,7 @@ export default function Dashboard() {
             className="text-4xl font-bold text-white tracking-tight">
             System <span className="text-red-500">Overview</span>
           </motion.h1>
-          <p className="text-gray-400 mt-2">Welcome back, <span className="text-white font-semibold">{user.name}</span>. Here is the current risk landscape.</p>
+          <p className="text-gray-400 mt-2">Welcome back, <span className="text-white font-semibold">{user.name}</span>.</p>
         </div>
         <button onClick={load} disabled={loading}
           className="flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 px-4 py-2 rounded-xl text-sm transition-all">
@@ -70,7 +74,6 @@ export default function Dashboard() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Main Trend Chart */}
             <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
               className="lg:col-span-2 glass p-8 rounded-3xl">
               <div className="flex justify-between items-center mb-8">
@@ -79,50 +82,47 @@ export default function Dashboard() {
                 </h2>
                 <div className="text-xs text-gray-400">8-Week Projection</div>
               </div>
-              <ResponsiveContainer width="100%" height={300}>
-                <AreaChart data={trend}>
-                  <defs>
-                    <linearGradient id="colorRisk" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#ef4444" stopOpacity={0.3}/>
-                      <stop offset="95%" stopColor="#ef4444" stopOpacity={0}/>
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
-                  <XAxis dataKey="week" stroke="#6b7280" fontSize={12} tickLine={false} axisLine={false} />
-                  <YAxis stroke="#6b7280" fontSize={12} tickLine={false} axisLine={false} />
-                  <Tooltip contentStyle={{ backgroundColor: '#111827', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px' }} />
-                  <Area type="monotone" dataKey="at_risk" stroke="#ef4444" strokeWidth={3} fillOpacity={1} fill="url(#colorRisk)" />
-                </AreaChart>
-              </ResponsiveContainer>
+              <div className="h-[300px] w-full">
+                {trend && trend.length > 0 ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={trend}>
+                      <defs>
+                        <linearGradient id="colorRisk" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#ef4444" stopOpacity={0.3}/>
+                          <stop offset="95%" stopColor="#ef4444" stopOpacity={0}/>
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+                      <XAxis dataKey="week" stroke="#6b7280" fontSize={12} tickLine={false} axisLine={false} />
+                      <YAxis stroke="#6b7280" fontSize={12} tickLine={false} axisLine={false} />
+                      <Tooltip contentStyle={{ backgroundColor: '#111827', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px' }} />
+                      <Area type="monotone" dataKey="at_risk" stroke="#ef4444" strokeWidth={3} fillOpacity={1} fill="url(#colorRisk)" />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="h-full flex items-center justify-center text-gray-500 text-sm italic">
+                    No trend data available yet. Predict more students!
+                  </div>
+                )}
+              </div>
             </motion.div>
 
-            {/* Right Column: Distribution & Quick Actions */}
             <div className="space-y-6">
               <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}
                 className="glass p-6 rounded-3xl">
                 <h3 className="text-white font-bold mb-4 text-sm uppercase tracking-widest">Risk Density</h3>
                 <div className="space-y-3">
-                  {Object.entries(stats?.risk_level_distribution || {}).map(([level, count]) => (
-                    <div key={level} className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/5">
-                      <span className={`text-xs font-bold ${level === 'CRITICAL' ? 'text-red-400' : 'text-gray-300'}`}>{level}</span>
-                      <span className="text-white font-mono">{count}</span>
-                    </div>
-                  ))}
+                  {stats?.risk_level_distribution ? (
+                    Object.entries(stats.risk_level_distribution).map(([level, count]) => (
+                      <div key={level} className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/5">
+                        <span className={`text-xs font-bold ${level === 'CRITICAL' ? 'text-red-400' : 'text-gray-300'}`}>{level}</span>
+                        <span className="text-white font-mono">{count}</span>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-gray-500 text-xs text-center py-4">No distribution data</p>
+                  )}
                 </div>
-              </motion.div>
-
-              <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }}
-                className="bg-red-600 p-6 rounded-3xl text-white relative overflow-hidden group cursor-pointer shadow-xl shadow-red-600/20"
-                onClick={() => navigate('/students')}
-              >
-                <div className="relative z-10">
-                  <h3 className="font-bold text-lg mb-1">View Criticals</h3>
-                  <p className="text-red-100 text-xs mb-4">Intervene now to prevent failures.</p>
-                  <div className="flex items-center gap-2 text-sm font-bold bg-white/20 w-fit px-3 py-1 rounded-full">
-                    Open Registry <ArrowUpRight size={14} />
-                  </div>
-                </div>
-                <ShieldAlert size={100} className="absolute -right-4 -bottom-4 text-white/10 rotate-12 group-hover:rotate-0 transition-transform duration-500" />
               </motion.div>
             </div>
           </div>
