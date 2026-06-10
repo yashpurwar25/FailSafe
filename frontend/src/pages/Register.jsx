@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { register } from '../api/auth'
-import { ShieldAlert, Loader2, User, Mail, Lock, Building2 } from 'lucide-react'
+import { User, Mail, Lock, Building2, Loader2, ShieldAlert } from 'lucide-react'
 import { motion } from 'framer-motion'
 
 export default function Register() {
