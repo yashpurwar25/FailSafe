@@ -90,3 +90,15 @@ def delete_student(student_id: int, db: Session = Depends(get_db), current=Depen
     db.delete(student)
     db.commit()
     return {"message": f"Student {student_id} deleted successfully"}
+@router.delete("/{student_id}")
+def delete_student(student_id: int, db: Session = Depends(get_db), current=Depends(get_//current_faculty)):
+    student = db.query(models.Student).filter(models.Student.id == student_id).first()
+    if not student:
+        raise HTTPException(404, "Student not found")
+    
+    # Delete associated predictions first to avoid foreign key errors
+    db.query(models.Prediction).filter(models.Prediction.student_id == student_id).delete()
+    
+    db.delete(student)
+    db.commit()
+    return {"message": "Student data deleted successfully"}
