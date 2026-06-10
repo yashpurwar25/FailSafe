@@ -1,11 +1,14 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { login } from '../api/auth'
-import { ShieldAlert } from 'lucide-react'
+import { ShieldAlert, Loader2 } from 'lucide-react'
+import { motion } from 'framer-motion'
 
 export default function Login() {
-  const [email, setEmail] = useState(''); const [password, setPassword] = useState('')
-  const [error, setError] = useState(''); const [loading, setLoading] = useState(false)
+  const [email, setEmail] = useState(''); 
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState(''); 
+  const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
 
   const handleSubmit = async e => {
@@ -23,38 +26,72 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0e1a] flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-3 mb-4">
-            <ShieldAlert className="text-red-500" size={36} />
-            <h1 className="text-4xl font-bold tracking-widest text-white">FAILSAFE</h1>
-          </div>
-          <p className="text-gray-400 text-sm">Faculty Portal · Student Risk Management</p>
+    <div className="min-h-screen bg-[#030712] flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Animated Background Glows */}
+      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-red-900/20 blur-[120px] animate-pulse" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-blue-900/20 blur-[120px] animate-pulse" style={{ animationDelay: '2s' }} />
+
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8 }}
+        className="w-full max-w-md z-10"
+      >
+        <div className="text-center mb-10">
+          <motion.div 
+            initial={{ scale: 0.8 }}
+            animate={{ scale: 1 }}
+            transition={{ type: 'spring', stiffness: 200 }}
+            className="inline-flex items-center gap-3 mb-4"
+          >
+            <div className="p-3 bg-red-600 rounded-2xl shadow-lg shadow-red-600/40">
+              <ShieldAlert className="text-white" size={32} />
+            </div>
+            <h1 className="text-5xl font-black tracking-tighter text-white">FAILSAFE</h1>
+          </motion.div>
+          <p className="text-gray-400 text-sm tracking-wide">Enterprise Student Risk Management</p>
         </div>
 
-        <form onSubmit={handleSubmit}
-          className="bg-[#111827] border border-[#1f2937] rounded-2xl p-8 space-y-5">
-          <div>
-            <label className="block text-xs text-gray-400 mb-1 uppercase tracking-wider">Email</label>
+        <motion.form 
+          onSubmit={handleSubmit}
+          className="glass border border-white/10 rounded-3xl p-8 space-y-6 shadow-2xl backdrop-blur-xl bg-white/5"
+        >
+          <div className="space-y-2">
+            <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Faculty Email</label>
             <input type="email" value={email} onChange={e => setEmail(e.target.value)} required
-              className="w-full bg-[#0a0e1a] border border-[#1f2937] rounded-lg px-4 py-3
-                         text-white placeholder-gray-600 focus:border-red-500 focus:outline-none text-sm" />
+              placeholder="name@university.edu"
+              className="w-full bg-black/40 border border-white/10 rounded-2xl px-4 py-4
+                         text-white placeholder-gray-600 focus:border-red-500 focus:ring-2 ring-red-500/20 outline-none transition-all text-sm" />
           </div>
-          <div>
-            <label className="block text-xs text-gray-400 mb-1 uppercase tracking-wider">Password</label>
+          
+          <div className="space-y-2">
+            <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Password</label>
             <input type="password" value={password} onChange={e => setPassword(e.target.value)} required
-              className="w-full bg-[#0a0e1a] border border-[#1f2937] rounded-lg px-4 py-3
-                         text-white placeholder-gray-600 focus:border-red-500 focus:outline-none text-sm" />
+              placeholder="••••••••"
+              className="w-full bg-black/40 border border-white/10 rounded-2xl px-4 py-4
+                         text-white placeholder-gray-600 focus:border-red-500 focus:ring-2 ring-red-500/20 outline-none transition-all text-sm" />
           </div>
-          {error && <p className="text-red-400 text-xs">{error}</p>}
+
+          {error && (
+            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-red-400 text-xs text-center font-medium">
+              {error}
+            </motion.p>
+          )}
+
           <button type="submit" disabled={loading}
-            className="w-full bg-red-600 hover:bg-red-500 disabled:opacity-50 text-white
-                       font-semibold py-3 rounded-lg transition-colors tracking-wide">
-            {loading ? 'Signing in...' : 'Sign In'}
+            className="w-full relative group overflow-hidden bg-red-600 hover:bg-red-500 disabled:opacity-50 text-white
+                       font-bold py-4 rounded-2xl transition-all duration-300 shadow-lg shadow-red-600/30 active:scale-95">
+            <span className="relative z-10 flex items-center justify-center gap-2">
+              {loading ? <Loader2 className="animate-spin" size={20} /> : 'Sign In to Portal'}
+            </span>
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-shimmer" />
           </button>
-        </form>
-      </div>
+        </motion.form>
+        
+        <p className="text-center text-gray-500 text-xs mt-8 font-medium tracking-tight">
+          Authorized Personnel Only. All access is logged.
+        </p>
+      </motion.div>
     </div>
   )
 }
