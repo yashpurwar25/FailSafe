@@ -1,8 +1,3 @@
-"""
-explain.py — SHAP-based explanations for individual students and global model
-Professional Version: Portable path handling and dtype safety.
-"""
-
 import shap
 import numpy as np
 import pandas as pd
@@ -14,20 +9,14 @@ from pathlib import Path
 import os
 
 matplotlib.use('Agg')
-
-# ==========================================
-# PATH CONFIGURATION (The Fix)
-# ==========================================
 SCRIPT_DIR = Path(__file__).resolve().parent 
 BASE_DIR = SCRIPT_DIR.parent 
 
 MODEL_DIR = BASE_DIR / "models"
 DATA_MAT_PATH = BASE_DIR / "data" / "raw" / "student-mat.csv"
 DATA_POR_PATH = BASE_DIR / "data" / "raw" / "student-por.csv"
-# ==========================================
 
 def load_artifacts(model_dir: Path):
-    """Load model and preprocessing artifacts using absolute paths."""
     model = joblib.load(model_dir / 'xgboost_model.pkl')
     encoders = joblib.load(model_dir / 'encoders.pkl')
     feature_cols = joblib.load(model_dir / 'feature_cols.pkl')
@@ -35,22 +24,15 @@ def load_artifacts(model_dir: Path):
 
 
 def build_explainer(model, X_background):
-    """Build TreeExplainer — fast and exact for XGBoost."""
-    # Ensure background data is float to avoid SHAP dtype errors
     X_background = X_background.astype(float)
     explainer = shap.TreeExplainer(model, X_background)
     return explainer
 
 
 def explain_single_student(explainer, student_row: pd.DataFrame, feature_cols: list) -> dict:
-    """
-    Return SHAP values for one student as a serialisable dict.
-    """
-    # Ensure row is float
     student_row = student_row.astype(float)
     shap_values = explainer.shap_values(student_row)
-    
-    # For binary XGBoost, shap_values shape is (1, n_features)
+
     sv = shap_values[0] if len(shap_values.shape) == 2 else shap_values
 
     contributions = []
@@ -63,7 +45,6 @@ def explain_single_student(explainer, student_row: pd.DataFrame, feature_cols: l
             'direction': 'increases_risk' if val > 0 else 'decreases_risk'
         })
 
-    # Sort by absolute SHAP value
     contributions.sort(key=lambda x: abs(x['shap_value']), reverse=True)
 
     return {
@@ -74,9 +55,6 @@ def explain_single_student(explainer, student_row: pd.DataFrame, feature_cols: l
 
 
 def generate_intervention(shap_explanation: dict, risk_prob: float, student_name: str = "Student") -> dict:
-    """
-    Auto-generate personalised intervention plan based on SHAP top factors.
-    """
     interventions = []
     top = shap_explanation['top_factors']
 
@@ -119,8 +97,6 @@ def generate_intervention(shap_explanation: dict, risk_prob: float, student_name
 
 
 def save_global_shap_plot(explainer, X_test, feature_cols, out_path: Path):
-    """Save global SHAP summary plot."""
-    # Ensure X_test is float
     X_test_numeric = X_test.astype(float)
     shap_values = explainer.shap_values(X_test_numeric)
     
@@ -135,31 +111,23 @@ def save_global_shap_plot(explainer, X_test, feature_cols, out_path: Path):
 
 if __name__ == '__main__':
     from preprocess import get_processed_data
-    
-    # 1. Load artifacts using absolute path
     print("[1/4] Loading model and artifacts...")
     model, encoders, feature_cols = load_artifacts(MODEL_DIR)
-    
-    # 2. Load data using absolute paths
+
     print("[2/4] Loading and preprocessing data...")
     X_train, X_test, y_train, y_test, _, _ = get_processed_data(
         str(DATA_MAT_PATH), str(DATA_POR_PATH)
     )
-    
-    # Force float casting to prevent SHAP/XGBoost dtype errors
     X_train = X_train.astype(float)
     X_test = X_test.astype(float)
-    
-    # 3. Build and save explainer
+
     print("[3/4] Building SHAP explainer...")
     explainer = build_explainer(model, X_train.sample(100, random_state=42))
     joblib.dump(explainer, MODEL_DIR / 'shap_explainer.pkl')
-    
-    # 4. Generate Plot
+   
     print("[4/4] Generating global SHAP plot...")
     save_global_shap_plot(explainer, X_test, feature_cols, MODEL_DIR / 'shap_summary.png')
 
-    # Demo: explain first test student
     row = X_test.iloc[[0]]
     risk_prob = model.predict_proba(row)[0][1]
     explanation = explain_single_student(explainer, row, feature_cols)
