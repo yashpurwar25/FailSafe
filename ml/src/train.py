@@ -1,8 +1,3 @@
-"""
-train.py — XGBoost training with Optuna HPO + class imbalance handling
-Fixed: Explicit dtype casting to prevent XGBoost 'object' error.
-"""
-
 import os
 import numpy as np
 import joblib
@@ -18,18 +13,13 @@ from sklearn.utils.class_weight import compute_sample_weight
 from imblearn.over_sampling import SMOTE
 from sklearn.model_selection import train_test_split
 
-# Import from local preprocess module
 from preprocess import get_processed_data
 
 import warnings
 warnings.filterwarnings('ignore')
 
-# Reduce Optuna noise
 optuna.logging.set_verbosity(optuna.logging.WARNING)
 
-# ==========================================
-# PATH CONFIGURATION
-# ==========================================
 SCRIPT_DIR = Path(__file__).resolve().parent 
 BASE_DIR = SCRIPT_DIR.parent 
 
@@ -38,10 +28,8 @@ DATA_POR_PATH = BASE_DIR / "data" / "raw" / "student-por.csv"
 MODEL_SAVE_DIR = BASE_DIR / "models"
 
 MODEL_SAVE_DIR.mkdir(parents=True, exist_ok=True)
-# ==========================================
 
 def objective(trial, X_train, y_train, X_val, y_val):
-    """Optuna objective: maximise F1 on validation split."""
     params = {
         'n_estimators':       trial.suggest_int('n_estimators', 200, 1000),
         'max_depth':          trial.suggest_int('max_depth', 3, 9),
@@ -72,7 +60,6 @@ def objective(trial, X_train, y_train, X_val, y_val):
 
 
 def train_with_smote(X_train, y_train):
-    """Apply SMOTE to handle class imbalance."""
     smote = SMOTE(random_state=42, k_neighbors=5)
     X_res, y_res = smote.fit_resample(X_train, y_train)
     print(f"After SMOTE — Total samples: {X_res.shape[0]}, "
@@ -81,7 +68,6 @@ def train_with_smote(X_train, y_train):
 
 
 def run_hpo(X_train, y_train, n_trials: int = 100):
-    """Run Optuna HPO and return best model params."""
     X_tr, X_val, y_tr, y_val = train_test_split(
         X_train, y_train, test_size=0.2, random_state=42, stratify=y_train
     )
@@ -99,7 +85,6 @@ def run_hpo(X_train, y_train, n_trials: int = 100):
 
 
 def train_final_model(X_train, y_train, best_params):
-    """Train final XGBoost on full training set with best params."""
     X_res, y_res = train_with_smote(X_train, y_train)
 
     final_params = best_params.copy()
@@ -118,7 +103,6 @@ def train_final_model(X_train, y_train, best_params):
 
 
 def evaluate_model(model, X_test, y_test, feature_cols):
-    """Comprehensive evaluation report."""
     y_pred = model.predict(X_test)
     y_prob = model.predict_proba(X_test)[:, 1]
 
@@ -139,21 +123,13 @@ def evaluate_model(model, X_test, y_test, feature_cols):
 
 
 def main():
-    """Main execution pipeline."""
     print("\n[0/3] Loading and preprocessing data...")
     X_train, X_test, y_train, y_test, encoders, feature_cols = get_processed_data(
         str(DATA_MAT_PATH),
         str(DATA_POR_PATH),
         save_dir=str(MODEL_SAVE_DIR)
     )
-
-    # =========================================================================
-    # FIX: Explicitly cast to float here to prevent XGBoost 'object' dtype error
-    # =========================================================================
-    X_train = X_train.astype(float)
     X_test = X_test.astype(float)
-    # =========================================================================
-
     print("\n[1/3] Running Optuna hyperparameter optimisation (100 trials)...")
     best_params = run_hpo(X_train, y_train, n_trials=100)
 
@@ -169,8 +145,8 @@ def main():
     joblib.dump(model, model_path)
     joblib.dump(best_params, params_path)
     
-    print(f"\n✅ Success! Model saved to: {model_path}")
-    print(f"✅ Params saved to: {params_path}")
+    print(f"\n Success! Model saved to: {model_path}")
+    print(f" Params saved to: {params_path}")
 
 
 if __name__ == '__main__':
