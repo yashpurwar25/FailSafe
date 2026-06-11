@@ -1,7 +1,5 @@
 import axios from 'axios'
 
-// This tells the app: "Use the Vercel Environment Variable if it exists, 
-// otherwise fallback to localhost for development"
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api'
 
 const api = axios.create({ 
