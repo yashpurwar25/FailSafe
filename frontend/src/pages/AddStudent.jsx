@@ -96,8 +96,6 @@ const Section = ({ title, color, children }) => (
     </div>
   </div>
 )
-
-// Map any school name to GP or MS intelligently
 const normalizeSchool = (input) => {
   const val = input.trim().toUpperCase()
   if (val === 'GP' || val.includes('GABRIEL') || val.includes('PEREIRA')) return 'GP'
