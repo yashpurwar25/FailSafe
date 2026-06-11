@@ -16,7 +16,6 @@ export default function Register() {
     e.preventDefault(); setLoading(true); setError('')
     try {
       await register(formData)
-      // Success! Redirect to login
       navigate('/login')
     } catch {
       setError('Registration failed. Email might already be in use.')
