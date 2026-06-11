@@ -9,7 +9,6 @@ from ..predict import prediction_service
 router = APIRouter(prefix="/api/students", tags=["students"])
 
 VALID_SCHOOLS = ['GP', 'MS']
-
 def normalize_school(school: str) -> str:
     val = school.strip().upper()
     if val == 'GP' or 'GABRIEL' in val or 'PEREIRA' in val:
