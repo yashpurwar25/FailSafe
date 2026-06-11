@@ -4,7 +4,6 @@ from sqlalchemy import func
 from .. import models
 from ..auth import get_current_faculty
 from ..database import get_db
-
 router = APIRouter(prefix="/api/dashboard", tags=["dashboard"])
 
 @router.get("/stats")
