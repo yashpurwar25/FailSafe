@@ -3,8 +3,6 @@ import pandas as pd
 import numpy as np
 import os
 import sys
-
-# Add ml/src to path for imports if needed
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../../ml/src'))
 
 from .database import settings
@@ -55,7 +53,6 @@ class PredictionService:
         try:
             df = pd.DataFrame([student_data])
 
-            # Fix for integer family size
             if 'famsize' in df.columns:
                 try:
                     numeric_famsize = pd.to_numeric(df['famsize'], errors='coerce')
@@ -196,6 +193,4 @@ class PredictionService:
                     'risk_probability': 0.0
                 }
             }
-
-# THIS LINE IS THE KEY - IT MUST BE OUTSIDE THE CLASS
 prediction_service = PredictionService()
