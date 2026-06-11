@@ -5,7 +5,6 @@ export default function Logo({ size = "lg" }) {
   return (
     <motion.div 
       className="flex items-center gap-3 cursor-pointer"
-      // Smooth floating animation
       animate={{ 
         y: [0, -6, 0],
         scale: [1, 1.02, 1]
