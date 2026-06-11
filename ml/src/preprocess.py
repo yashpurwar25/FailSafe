@@ -1,8 +1,3 @@
-"""
-preprocess.py — Data loading, EDA, feature engineering for FAILSAFE
-Fixed: Handle NaN values during binning/casting to prevent ValueError.
-"""
-
 import pandas as pd
 import numpy as np
 from sklearn.preprocessing import LabelEncoder, StandardScaler
@@ -10,17 +5,12 @@ from sklearn.model_selection import train_test_split
 import joblib
 import os
 from pathlib import Path
-
-# ==========================================
-# PATH CONFIGURATION
-# ==========================================
 SCRIPT_DIR = Path(__file__).resolve().parent 
 BASE_DIR = SCRIPT_DIR.parent 
 
 DATA_MAT_PATH = BASE_DIR / "data" / "raw" / "student-mat.csv"
 DATA_POR_PATH = BASE_DIR / "data" / "raw" / "student-por.csv"
 MODEL_SAVE_DIR = BASE_DIR / "models"
-# ==========================================
 
 BINARY_COLS = ['schoolsup', 'famsup', 'paid', 'activities', 'nursery', 'higher', 'internet', 'romantic']
 ORDINAL_COLS = ['Medu', 'Fedu', 'traveltime', 'studytime', 'famrel', 'freetime', 'goout', 'Dalc', 'Walc', 'health']
@@ -29,19 +19,12 @@ NUMERIC_COLS = ['age', 'absences', 'G1', 'G2']
 TARGET = 'at_risk'
 
 def load_and_merge(mat_path: str, por_path: str) -> pd.DataFrame:
-    """Load both CSVs, tag subject, merge into one DataFrame."""
-    # Use sep=None and engine='python' to let pandas automatically detect 
-    # whether the file uses commas (,) or semicolons (;)
     mat = pd.read_csv(mat_path, sep=None, engine='python')
     mat['subject'] = 'math'
     
     por = pd.read_csv(por_path, sep=None, engine='python')
     por['subject'] = 'portuguese'
-    
     df = pd.concat([mat, por], ignore_index=True)
-    
-    # DEBUG CHECK: If the dataframe only has 1 or 2 columns, 
-    # it means the loading failed completely.
     if df.shape[1] < 10:
         raise ValueError(f"Data loading failed! The file at {mat_path} "
                          f"was not parsed correctly. It has only {df.shape[1]} columns. "
@@ -58,41 +41,20 @@ def create_target(df: pd.DataFrame, threshold: int = 10) -> pd.DataFrame:
     return df
 
 def feature_engineering(df: pd.DataFrame) -> pd.DataFrame:
-    """Create meaningful derived features."""
     df = df.copy()
-
-    # SAFEGUARD: Fill any missing numerical values with 0 before calculations
-    # This prevents "Cannot convert float NaN to integer" errors
     df[NUMERIC_COLS] = df[NUMERIC_COLS].fillna(0)
-
-    # Grade momentum
     df['grade_momentum'] = df['G2'] - df['G1']
-
-    # Average grade
     df['avg_grade'] = (df['G1'] + df['G2']) / 2
-
-    # Risk score
     df['grade_risk'] = 1 - (df['avg_grade'] / 20)
-
-    # Parental education average
     df['parent_edu_avg'] = (df['Medu'] + df['Fedu']) / 2
-
-    # Social risk
     df['romantic_bin'] = (df['romantic'] == 'yes').astype(int)
     df['social_risk'] = df['Dalc'] + df['Walc'] + df['goout'] + df['romantic_bin']
-
-    # FIXED: Absence risk bucket
-    # We use .fillna(0) inside the cut just to be 100% safe
     df['absence_risk'] = pd.cut(
         df['absences'].fillna(0), 
         bins=[-1, 0, 5, 15, 999],
         labels=[0, 1, 2, 3]
     ).astype(int)
-
-    # Study efficiency
     df['study_efficiency'] = df['avg_grade'] / (df['studytime'] + 1)
-
-    # Family support composite
     df['famsup_bin'] = (df['famsup'] == 'yes').astype(int)
     df['schoolsup_bin'] = (df['schoolsup'] == 'yes').astype(int)
     df['support_score'] = df['famsup_bin'] + df['schoolsup_bin'] + df['paid'].apply(lambda x: 1 if x == 'yes' else 0)
